@@ -1,4 +1,4 @@
-input = open("Test_Cases/input1.txt",'r')
+input = open("Test_Cases/input4.txt",'r')
 output = open("Test_Cases/output.txt",'w')
 
 friends = []
@@ -32,7 +32,12 @@ def Cond2():
             list_clauses.append(alt_clause)
 
 def Cond3():
-    
+    for e in enemies:
+        a,b = e
+        for i in xrange(1,tables+1):
+            clause = ""
+            clause += "~X"+str(a)+str(i)+"V~X"+str(b)+str(i)
+            list_clauses.append(clause)
 
 guests,tables = [int(x) for x in input.readline().strip().split(" ")]
 #print guests, tables
@@ -45,4 +50,6 @@ for l in input.readlines():
 
 Cond1()
 Cond2()
+Cond3()
 print list_clauses
+
