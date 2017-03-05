@@ -49,8 +49,9 @@ def Cond3():
             symbols.add("~X"+str(b)+str(i))
             list_clauses.append(clause)
 
-def ModelCheck(old_clauses,model):
-    newClause = deepcopy(old_clauses)
+def ModelCheck(newClause,model):
+    #newClause = deepcopy(old_clause)
+    remove_clauses = []
     if not model:
         return "None"
     for mod_ele in model:
@@ -58,14 +59,15 @@ def ModelCheck(old_clauses,model):
             if not clause_ele:
                 return False
             if mod_ele in clause_ele:
-                newClause.remove(clause_ele)
+                remove_clauses.append(clause_ele)
+                #newClause.remove(clause_ele)
             else:
                 if mod_ele[0] == "~":
                     if mod_ele[1:] in clause_ele:
-                        newClause.remove(mod_ele[1:])
+                        clause_ele.remove(mod_ele[1:])
                 else:
                     if ("~" + mod_ele) in clause_ele:
-                        newClause.remove("~" + mod_ele)
+                        clause_ele.remove("~" + mod_ele)
             if not clause_ele:
                 return False
 
@@ -75,7 +77,8 @@ def ModelCheck(old_clauses,model):
     for c in newClause:
         if not c:
             return False
-
+    for clause in remove_clauses:
+        newClause.remove(clause)
     return "Cont"
 
 def PureSymbol(symbols,clauses,model):
@@ -86,11 +89,11 @@ def PureSymbol(symbols,clauses,model):
         isPure = 1
         for del_clause in clause_ele:
             if del_clause[0] == "~":
-                if del_clause[1:] in symbols:
+                if del_clause[1:] in symbols or del_clause[1:] in model:
                     isPure = 0
                     break
             else:
-                if ("~" + del_clause) in symbols:
+                if ("~" + del_clause) in symbols or del_clause[1:] in model:
                     isPure = 0
                     break
             if isPure:
@@ -121,14 +124,21 @@ def UnitClause(clauses,model):
 def remove(symbols,P):
     if symbols:
         symbols.discard(P)
-    return
+    return symbols
+
+def Union(model,P):
+    model.add(P)
+    return model
 
 def Dpll(clauses,symbols,model):
 
-    print "IN Dpll",symbols,model
     if not symbols:
         return model
     result = ModelCheck(clauses,model)
+    print "\nIN Dpll"
+    print "clauses: ",clauses
+    print "symbols: ",symbols
+    print "model : ",model
     if result == True:
         return True
     elif result == False:
@@ -137,24 +147,35 @@ def Dpll(clauses,symbols,model):
         P = PureSymbol(symbols,clauses,model)
         if P:
             model.add(str(P))
-            print "Added Pure",model,str(P),P
+            print "Added Pure",P
+            print 'Model now is',model
             return Dpll(clauses, remove(symbols, P), model)
         P = UnitClause(clauses,model)
         if P:
             model.add(str(P))
-            print "Added Unit",model
+            print "Added Unit",P
+            print 'Model now is', model
             return Dpll(clauses, remove(symbols, P), model)
+
         P = symbols.pop()
-        model_1 = deepcopy(model)
-        model.add(str(P))
-        print "Added not both of them",model,model_1
-        model_1.add("~"+str(P))
-        return Dpll(clauses,symbols,model) or \
-               Dpll(clauses,symbols,model_1)
+        if P[0] == "~":
+            P_1 = str(P[1:])
+        else:
+            P_1 =("~"+str(P))
+        #print "Added not both of them", model, model_1
+        return Dpll(clauses,remove(symbols,P),Union(model,P)) or \
+               Dpll(clauses,remove(symbols,P),Union(model,P_1))
 
 def DpllSatisfiable():
+    #model = Set([])
+    list_symbols = symbols
     model = Set([])
-    return Dpll(list_clauses,symbols,model)
+    result = Dpll(list_clauses,list_symbols,model)
+    print "result : ",result
+    if result:
+        print model
+    else:
+        print "No Solution"
 
 guests,tables = [int(x) for x in input.readline().strip().split(" ")]
 #print guests, tables
@@ -170,6 +191,6 @@ Cond1()
 Cond2()
 Cond3()
 #print list_clauses
-print DpllSatisfiable()
+DpllSatisfiable()
 #print len(list_clauses),list_clauses
 
