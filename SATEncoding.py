@@ -11,6 +11,14 @@ symbols = Set([])
 global guests
 global tables
 
+
+def Answer(model):
+    print model
+    for item in model:
+        if item[0] == "~":
+            print list(item)[2] , list(item)[3]
+            #output.write(solution)
+
 def Cond1():
     for i in xrange(1,guests+1):
         clause = []
@@ -135,10 +143,10 @@ def Dpll(clauses,symbols,model):
     if not symbols:
         return model
     result = ModelCheck(clauses,model)
-    print "\nIN Dpll"
-    print "clauses: ",clauses
-    print "symbols: ",symbols
-    print "model : ",model
+    #print "\nIN Dpll"
+    #print "clauses: ",clauses
+    #print "symbols: ",symbols
+    #print "model : ",model
     if result == True:
         return True
     elif result == False:
@@ -147,14 +155,14 @@ def Dpll(clauses,symbols,model):
         P = PureSymbol(symbols,clauses,model)
         if P:
             model.add(str(P))
-            print "Added Pure",P
-            print 'Model now is',model
+            #print "Added Pure",P
+           # print 'Model now is',model
             return Dpll(clauses, remove(symbols, P), model)
         P = UnitClause(clauses,model)
         if P:
             model.add(str(P))
-            print "Added Unit",P
-            print 'Model now is', model
+            #print "Added Unit",P
+            #print 'Model now is', model
             return Dpll(clauses, remove(symbols, P), model)
 
         P = symbols.pop()
@@ -171,11 +179,13 @@ def DpllSatisfiable():
     list_symbols = symbols
     model = Set([])
     result = Dpll(list_clauses,list_symbols,model)
-    print "result : ",result
     if result:
-        print model
+        print "yes"
+        output.write("yes")
+        print Answer(model)
     else:
-        print "No Solution"
+        output.write("no")
+        print "no"
 
 guests,tables = [int(x) for x in input.readline().strip().split(" ")]
 #print guests, tables
@@ -192,5 +202,5 @@ Cond2()
 Cond3()
 #print list_clauses
 DpllSatisfiable()
-#print len(list_clauses),list_clauses
+
 
