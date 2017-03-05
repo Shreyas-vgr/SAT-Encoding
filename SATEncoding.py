@@ -1,7 +1,7 @@
 from sets import Set
 from copy import deepcopy
 
-input = open("Test_Cases/input3.txt",'r')
+input = open("Test_Cases/input1.txt",'r')
 output = open("Test_Cases/output.txt",'w')
 
 friends = []
@@ -20,15 +20,16 @@ def Cond1():
             alt_clause.append("X"+str(i)+str(j))
             symbols.add("~X"+str(i)+str(j))
             symbols.add("X"+str(i)+str(j))
-        list_clauses.append(clause)
         list_clauses.append(alt_clause)
+        if tables > 1:
+            list_clauses.append(clause)
 
 def Cond2():
     for f in friends:
         a,b = f
-        clause = []
-        alt_clause = []
         for i in xrange(1,tables+1):
+            clause = []
+            alt_clause = []
             clause.extend(["~X"+str(a)+str(i),"X"+str(b)+str(i)])
             alt_clause.extend(["X"+str(a)+str(i),"~X"+str(b)+str(i)])
             symbols.add("~X"+str(a)+str(i))
@@ -41,8 +42,8 @@ def Cond2():
 def Cond3():
     for e in enemies:
         a,b = e
-        clause = []
         for i in xrange(1,tables+1):
+            clause = []
             clause.extend(["~X"+str(a)+str(i),"~X"+str(b)+str(i)])
             symbols.add("~X"+str(a)+str(i))
             symbols.add("~X"+str(b)+str(i))
@@ -123,7 +124,10 @@ def remove(symbols,P):
     return
 
 def Dpll(clauses,symbols,model):
-    #print clauses,symbols,model
+
+    print "IN Dpll",symbols,model
+    if not symbols:
+        return model
     result = ModelCheck(clauses,model)
     if result == True:
         return True
@@ -131,17 +135,26 @@ def Dpll(clauses,symbols,model):
         return False
     else:
         P = PureSymbol(symbols,clauses,model)
-        if not P:
-            return Dpll(clauses, remove(symbols, P), model.add(str(P)))
+        if P:
+            model.add(str(P))
+            print "Added Pure",model,str(P),P
+            return Dpll(clauses, remove(symbols, P), model)
         P = UnitClause(clauses,model)
-        if not P:
-            return Dpll(clauses, remove(symbols, P), model.add(str(P)))
+        if P:
+            model.add(str(P))
+            print "Added Unit",model
+            return Dpll(clauses, remove(symbols, P), model)
         P = symbols.pop()
-        return Dpll(clauses,symbols,model.add(str(P))) or \
-               Dpll(clauses,symbols,model.add("~"+str(P)))
+        model_1 = deepcopy(model)
+        model.add(str(P))
+        print "Added not both of them",model,model_1
+        model_1.add("~"+str(P))
+        return Dpll(clauses,symbols,model) or \
+               Dpll(clauses,symbols,model_1)
 
 def DpllSatisfiable():
-    return Dpll(list_clauses,symbols,Set([]))
+    model = Set([])
+    return Dpll(list_clauses,symbols,model)
 
 guests,tables = [int(x) for x in input.readline().strip().split(" ")]
 #print guests, tables
@@ -156,6 +169,7 @@ for l in input.readlines():
 Cond1()
 Cond2()
 Cond3()
+#print list_clauses
 print DpllSatisfiable()
 #print len(list_clauses),list_clauses
 
