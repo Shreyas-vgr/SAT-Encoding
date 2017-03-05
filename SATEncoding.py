@@ -1,6 +1,5 @@
 from sets import Set
-
-from boto.dynamodb.condition import NULL
+from copy import deepcopy
 
 input = open("Test_Cases/input3.txt",'r')
 output = open("Test_Cases/output.txt",'w')
@@ -50,28 +49,77 @@ def Cond3():
             list_clauses.append(clause)
 
 def ModelCheck(old_clauses,model):
-    clauses = deepcopy(old_clauses)
-    for m in model:
-        for c in clauses:
-            if m in c:
-                clauses.remove(c)
-            else:
-                c.remove("~"+str(m))
-            if not c:
+    newClause = deepcopy(old_clauses)
+    if not model:
+        return "None"
+    for mod_ele in model:
+        for clause_ele in newClause:
+            if not clause_ele:
                 return False
-    if not clauses:
+            if mod_ele in clause_ele:
+                newClause.remove(clause_ele)
+            else:
+                if mod_ele[0] == "~":
+                    if mod_ele[1:] in clause_ele:
+                        newClause.remove(mod_ele[1:])
+                else:
+                    if ("~" + mod_ele) in clause_ele:
+                        newClause.remove("~" + mod_ele)
+            if not clause_ele:
+                return False
+
+    if not newClause:
         return True
-    else:
-        return "Done"
+
+    for c in newClause:
+        if not c:
+            return False
+
+    return "Cont"
 
 def PureSymbol(symbols,clauses,model):
-    pass
+    isPure = 0
+    if not symbols:
+        return None
+    for clause_ele in clauses:
+        isPure = 1
+        for del_clause in clause_ele:
+            if del_clause[0] == "~":
+                if del_clause[1:] in symbols:
+                    isPure = 0
+                    break
+            else:
+                if ("~" + del_clause) in symbols:
+                    isPure = 0
+                    break
+            if isPure:
+                model.add(del_clause)
+                for j in clauses:
+                    if del_clause in j:
+                        clauses.remove(j)
+                return del_clause
+    return None
 
 def UnitClause(clauses,model):
-    pass
+    for clause_ele in clauses:
+        if len(clause_ele) == 1:
+            model.add(clause_ele[0])
+            for del_clause in clauses:
+                if clause_ele[0] in del_clause:
+                    clauses.remove(del_clause)
+                else:
+                    if clause_ele[0][0] == "~":
+                        if clause_ele[0][1:] in del_clause:
+                            del_clause.remove(clause_ele[0][1:])
+                    else:
+                        if ("~" + clause_ele[0]) in del_clause:
+                            del_clause.remove("~" + clause_ele[0])
+            return clause_ele[0]
+    return None
 
 def remove(symbols,P):
-    symbols.discard(P)
+    if symbols:
+        symbols.discard(P)
     return
 
 def Dpll(clauses,symbols,model):
@@ -108,6 +156,6 @@ for l in input.readlines():
 Cond1()
 Cond2()
 Cond3()
-#DpllSatisfiable()
+print DpllSatisfiable()
 #print len(list_clauses),list_clauses
 
