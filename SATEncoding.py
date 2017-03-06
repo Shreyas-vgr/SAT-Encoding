@@ -1,7 +1,7 @@
 from sets import Set
 from copy import deepcopy
 
-input = open("Test_Cases/input1.txt",'r')
+input = open("Test_Cases/input5.txt",'r')
 output = open("Test_Cases/output.txt",'w')
 
 friends = []
@@ -14,10 +14,12 @@ global tables
 
 def Answer(model):
     print model
+    result = []
     for item in model:
-        if item[0] == "~":
-            print list(item)[2] , list(item)[3]
-            #output.write(solution)
+        if item[0] != "~":
+            result.append(item)
+            print item
+    print result
 
 def Cond1():
     for i in xrange(1,guests+1):
@@ -26,7 +28,7 @@ def Cond1():
         for j in xrange(1,tables+1):
             clause.append("~X"+str(i)+str(j))
             alt_clause.append("X"+str(i)+str(j))
-            symbols.add("~X"+str(i)+str(j))
+            #symbols.add("~X"+str(i)+str(j))
             symbols.add("X"+str(i)+str(j))
         list_clauses.append(alt_clause)
         if tables > 1:
@@ -40,10 +42,10 @@ def Cond2():
             alt_clause = []
             clause.extend(["~X"+str(a)+str(i),"X"+str(b)+str(i)])
             alt_clause.extend(["X"+str(a)+str(i),"~X"+str(b)+str(i)])
-            symbols.add("~X"+str(a)+str(i))
+            #symbols.add("~X"+str(a)+str(i))
             symbols.add("X"+str(b)+str(i))
             symbols.add("X"+str(a)+str(i))
-            symbols.add("~X"+str(b)+str(i))
+            #symbols.add("~X"+str(b)+str(i))
             list_clauses.append(clause)
             list_clauses.append(alt_clause)
 
@@ -53,8 +55,8 @@ def Cond3():
         for i in xrange(1,tables+1):
             clause = []
             clause.extend(["~X"+str(a)+str(i),"~X"+str(b)+str(i)])
-            symbols.add("~X"+str(a)+str(i))
-            symbols.add("~X"+str(b)+str(i))
+            #symbols.add("~X"+str(a)+str(i))
+            #symbols.add("~X"+str(b)+str(i))
             list_clauses.append(clause)
 
 def ModelCheck(newClause,model):
@@ -96,14 +98,15 @@ def PureSymbol(symbols,clauses,model):
     for clause_ele in clauses:
         isPure = 1
         for del_clause in clause_ele:
-            if del_clause[0] == "~":
-                if del_clause[1:] in symbols or del_clause[1:] in model:
-                    isPure = 0
-                    break
-            else:
-                if ("~" + del_clause) in symbols or del_clause[1:] in model:
-                    isPure = 0
-                    break
+            for ele in clauses:
+                if del_clause[0] == "~":
+                    if del_clause[1:] in ele:
+                        isPure = 0
+                        break
+                else:
+                    if ("~" + del_clause) in ele:
+                        isPure = 0
+                        break
             if isPure:
                 model.add(del_clause)
                 for j in clauses:
@@ -131,7 +134,10 @@ def UnitClause(clauses,model):
 
 def remove(symbols,P):
     if symbols:
-        symbols.discard(P)
+        if P[0] == "~":
+            symbols.discard(P[1:])
+        else:
+            symbols.discard(P)
     return symbols
 
 def Union(model,P):
@@ -143,10 +149,10 @@ def Dpll(clauses,symbols,model):
     if not symbols:
         return model
     result = ModelCheck(clauses,model)
-    #print "\nIN Dpll"
-    #print "clauses: ",clauses
-    #print "symbols: ",symbols
-    #print "model : ",model
+    print "\nIN Dpll"
+    print "clauses: ",clauses
+    print "symbols: ",symbols
+    print "model : ",model
     if result == True:
         return True
     elif result == False:
@@ -155,16 +161,18 @@ def Dpll(clauses,symbols,model):
         P = PureSymbol(symbols,clauses,model)
         if P:
             model.add(str(P))
-            #print "Added Pure",P
-           # print 'Model now is',model
+            print "Added Pure",P
+            print 'Model now is',model
             return Dpll(clauses, remove(symbols, P), model)
         P = UnitClause(clauses,model)
         if P:
             model.add(str(P))
-            #print "Added Unit",P
-            #print 'Model now is', model
+            print "Added Unit",P
+            print 'Model now is', model
             return Dpll(clauses, remove(symbols, P), model)
 
+        if not clauses:
+            return True
         P = symbols.pop()
         if P[0] == "~":
             P_1 = str(P[1:])

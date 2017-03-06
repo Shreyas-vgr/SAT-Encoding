@@ -1,4 +1,4 @@
-input = open("Test_Cases/input1.txt",'r')
+input = open("Test_Cases/input3.txt",'r')
 output = open("Test_Cases/output.txt",'w')
 
 friends = []
@@ -9,14 +9,16 @@ global guests
 global tables
 
 
-def Answer(model):
-    print model
-    result = []
-    for item in model:
-        if item[0] != "~":
-            result.append(item)
-            print item
-    print result
+def Answer(result):
+    list_of_strings = []
+    for key,value in sorted(result.items()):
+        string = ""
+        if value == True:
+            string += str(key[1]) + " " +str(key[2:]) + "\n"
+            list_of_strings.append(string)
+    list_of_strings[-1]  = list_of_strings[-1][:-1]
+    output.writelines(list_of_strings)
+
 
 def Cond1():
     for i in xrange(1,guests+1):
@@ -138,7 +140,7 @@ def Dpll(clauses,symbols,model):
             return False
         if result != True:
             unknown_clauses.append(c)
-    if not unknown_clauses:
+    if not unknown_clauses or not symbols:
         return model
     P ,value = PureSymbol(symbols, unknown_clauses)
     if P:
@@ -166,8 +168,8 @@ def DpllSatisfiable():
     #print result
     if result:
         print "yes"
-        output.write("yes")
-        print result
+        output.write("yes\n")
+        Answer(result)
     else:
         output.write("no")
         print "no"
