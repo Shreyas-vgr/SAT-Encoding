@@ -1,6 +1,7 @@
 # SAT-Encoding-Solver
 
 Problem Description
+
 Suppose you have a wedding to plan, and want to arrange the wedding seating for a certain
 number of guests in a hall. The hall has a certain number of tables for seating. Some pairs of
 guests are couples or close Friends (F) and want to sit together at the same table. Some other
